@@ -11,17 +11,17 @@ RUN apt-get update \
     clang zlib1g-dev
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["SyntheticGeneratorSln/SyntheticGeneratorSln.csproj", "SyntheticGeneratorSln/"]
-RUN dotnet restore "./SyntheticGeneratorSln/SyntheticGeneratorSln.csproj"
+COPY ["SyntheticGenerator/SyntheticGenerator.csproj", "SyntheticGenerator/"]
+RUN dotnet restore "./SyntheticGenerator/SyntheticGenerator.csproj"
 COPY . .
-WORKDIR "/src/SyntheticGeneratorSln"
-RUN dotnet build "./SyntheticGeneratorSln.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/SyntheticGenerator"
+RUN dotnet build "./SyntheticGenerator.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./SyntheticGeneratorSln.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=true
+RUN dotnet publish "./SyntheticGenerator.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=true
 
 FROM mcr.microsoft.com/dotnet/runtime-deps:8.0 AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["./SyntheticGeneratorSln"]
+ENTRYPOINT ["./SyntheticGenerator"]

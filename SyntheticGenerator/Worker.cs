@@ -1,4 +1,4 @@
-namespace SyntheticGeneratorSln
+namespace SyntheticGenerator
 {
     public class Worker : BackgroundService
     {
