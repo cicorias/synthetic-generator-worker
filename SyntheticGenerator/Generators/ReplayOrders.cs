@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -36,9 +37,9 @@ namespace SyntheticGenerator.Generators
             _logger.LogInformation("...");
             var windowStartTimeStr = "2024-03-15T12:00:00";
             var windowEndTimeStr = "2024-03-15T12:15:00";
-            var outputFile = "events.txt";
+            var outputFile = "events.jsonl";
             var lambda = double.Parse("120");
-            var numberOfEvents = int.Parse("100000");
+            var numberOfEvents = int.Parse("500");
 
             var windowStartTime = DateTime.Parse(windowStartTimeStr);
             var windowEndTime = DateTime.Parse(windowEndTimeStr);
@@ -55,12 +56,24 @@ namespace SyntheticGenerator.Generators
 
                     // Distribute events evenly across the time window
                     var fraction = (double)i / numberOfEvents;
-                    var offset = TimeSpan.FromTicks((long)(fraction * windowDuration.Ticks));
+                    var offset = TimeSpan.FromTicks((long)(fraction * windowDuration.Ticks)).RoundedToSeconds();
+
+                    //double totalSeconds = offset.TotalSeconds;
+                    //int roundedSeconds = (int)Math.Round(totalSeconds);
+                    //TimeSpan roundedTimeSpan = TimeSpan.FromSeconds(roundedSeconds);
 
                     var eventStartTime = windowStartTime.Add(offset);
                     var eventEndTime = eventStartTime.Add(eventDuration);
 
-                    writer.WriteLine($"{eventStartTime:yyyy-MM-ddTHH:mm:ss},{eventEndTime:yyyy-MM-ddTHH:mm:ss},{eventDurationInSeconds}");
+                    var evt = new Event
+                    {
+                        StartTime = eventStartTime,
+                        EndTime = eventEndTime,
+                        TotalTime = eventDurationInSeconds
+                    };
+
+                    var json = JsonSerializer.Serialize(evt);
+                    await writer.WriteLineAsync(json);
                 }
             }
 
@@ -91,6 +104,17 @@ namespace SyntheticGenerator.Generators
     internal class Event
     {
         public DateTime StartTime { get; set; }
-        //public DateTimeOffset DateOffset { get; set; }
+        public DateTime EndTime { get; set; }
+        public double TotalTime { get; set; }
+    }
+
+    internal static class Extensions
+    {
+
+        public static TimeSpan RoundedToSeconds(this TimeSpan ts)
+        {
+            return TimeSpan.FromSeconds((int)Math.Round(ts.TotalSeconds));
+        }
+        
     }
 }
