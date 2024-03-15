@@ -34,52 +34,53 @@ namespace SyntheticGenerator.Generators
         {
             // Implementation of your primary work
             _logger.LogInformation("...");
-            double lambda = 1.0; // Lambda for Poisson distribution, in seconds
-            int numberOfEvents = 10; // Total number of events you want to generate
 
-            string filePath = "events.jsonl"; // Path to the JSON Lines file
-            using var fileStream = new StreamWriter(filePath);
+            int numberOfEvents = int.Parse("50");
+            DateTime windowStartTime = DateTime.Parse("2024-03-15T12:00:00");
+            DateTime windowEndTime = DateTime.Parse("2024-03-15T12:15:00");
+            string filePath = "events.txt";
 
-            var random = new Random(42);
-            DateTime previousEventTime = DateTime.Now;
 
-            for (int i = 0; i < numberOfEvents; i++)
-            {
-                double timeDifference = -Math.Log(1.0 - random.NextDouble()) / lambda;
-                DateTime eventTime;
+            GenerateEventTimes(numberOfEvents, windowStartTime, windowEndTime, filePath);
 
-                if (i == 0)
-                {
-                    // First event starts at the current time
-                    eventTime = previousEventTime;
-                }
-                else
-                {
-                    // Subsequent events use the time difference
-                    eventTime = previousEventTime.AddSeconds(timeDifference);
-                }
-
-                var eventObj = new Event
-                {
-                    StartTime = eventTime
-                };
-
-                var json = JsonSerializer.Serialize(eventObj);
-                await fileStream.WriteLineAsync(json);
-
-                //previousEventTime = previousEventTime.AddSeconds(-Math.Log(1 - random.NextDouble()) * lambda);
-                //var order = new
-                //{
-                //    OrderId = Guid.NewGuid(),
-                //    EventTime = previousEventTime,
-                //    EventType = "OrderPlaced"
-                //};
-                //var json = JsonSerializer.Serialize(order);
-                //await fileStream.WriteLineAsync(json);
-            }
-
-            await Task.Delay(1000);
+        await Task.Delay(1000);
             _logger.LogInformation("Primary work is done");
+        }
+
+        static void GenerateEventTimes(int numberOfEvents, DateTime windowStartTime, DateTime windowEndTime, string filePath)
+        {
+            var random = new Random();
+
+            using (var writer = new StreamWriter(filePath))
+            {
+                for (int i = 0; i < numberOfEvents; i++)
+                {
+                    DateTime startTime = GenerateRandomDateTime(windowStartTime, windowEndTime, random);
+                    double durationInHours = SampleExponential(random, 1.0); // Exponential sample for event duration
+                    DateTime endTime = startTime.AddHours(durationInHours);
+
+                    // Ensure endTime is within the window
+                    if (endTime > windowEndTime)
+                    {
+                        endTime = windowEndTime;
+                    }
+
+                    writer.WriteLine($"Start Time: {startTime}, End Time: {endTime}");
+                }
+            }
+        }
+
+        static DateTime GenerateRandomDateTime(DateTime start, DateTime end, Random random)
+        {
+            TimeSpan range = end - start;
+            TimeSpan randomSpan = new TimeSpan((long)(random.NextDouble() * range.Ticks));
+            return start + randomSpan;
+        }
+
+        static double SampleExponential(Random random, double mean)
+        {
+            // Using the inverse transform sampling method for the exponential distribution
+            return -mean * Math.Log(1 - random.NextDouble());
         }
 
     }
