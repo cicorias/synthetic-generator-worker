@@ -13,6 +13,7 @@ namespace SyntheticGenerator.Generators
     {
         private readonly ILogger<ReplayOrders> _logger;
         private readonly IHostApplicationLifetime _hostApplicationLifetime;
+        private readonly Random random = new();
 
         public ReplayOrders(ILogger<ReplayOrders> logger, IHostApplicationLifetime hostApplicationLifetime)
         {
@@ -32,60 +33,62 @@ namespace SyntheticGenerator.Generators
         }
         private async Task DoPrimaryWork()
         {
-            // Implementation of your primary work
             _logger.LogInformation("...");
+            var windowStartTimeStr = "2024-03-15T12:00:00";
+            var windowEndTimeStr = "2024-03-15T12:15:00";
+            var outputFile = "events.txt";
+            var lambda = double.Parse("120");
+            var numberOfEvents = int.Parse("100000");
 
-            int numberOfEvents = int.Parse("50");
-            DateTime windowStartTime = DateTime.Parse("2024-03-15T12:00:00");
-            DateTime windowEndTime = DateTime.Parse("2024-03-15T12:15:00");
-            string filePath = "events.txt";
+            var windowStartTime = DateTime.Parse(windowStartTimeStr);
+            var windowEndTime = DateTime.Parse(windowEndTimeStr);
+            var windowDuration = windowEndTime - windowStartTime;
 
+            using (var writer = new StreamWriter(outputFile))
+            {
+                writer.WriteLine("StartTime,EndTime,TotalTime");
 
-            GenerateEventTimes(numberOfEvents, windowStartTime, windowEndTime, filePath);
+                for (var i = 0; i < numberOfEvents; i++)
+                {
+                    var eventDurationInSeconds = GeneratePoisson(lambda);
+                    var eventDuration = TimeSpan.FromSeconds(eventDurationInSeconds);
 
-        await Task.Delay(1000);
+                    // Distribute events evenly across the time window
+                    var fraction = (double)i / numberOfEvents;
+                    var offset = TimeSpan.FromTicks((long)(fraction * windowDuration.Ticks));
+
+                    var eventStartTime = windowStartTime.Add(offset);
+                    var eventEndTime = eventStartTime.Add(eventDuration);
+
+                    writer.WriteLine($"{eventStartTime:yyyy-MM-ddTHH:mm:ss},{eventEndTime:yyyy-MM-ddTHH:mm:ss},{eventDurationInSeconds}");
+                }
+            }
+
+            Console.WriteLine("File created successfully.");
+
+            await Task.Delay(1000);
             _logger.LogInformation("Primary work is done");
         }
 
-        static void GenerateEventTimes(int numberOfEvents, DateTime windowStartTime, DateTime windowEndTime, string filePath)
+        // Poisson distribution generator
+        private int GeneratePoisson(double lambda)
         {
-            var random = new Random();
+            var l = Math.Exp(-lambda);
+            var k = 0;
+            double p = 1;
 
-            using (var writer = new StreamWriter(filePath))
+            do
             {
-                for (int i = 0; i < numberOfEvents; i++)
-                {
-                    DateTime startTime = GenerateRandomDateTime(windowStartTime, windowEndTime, random);
-                    double durationInHours = SampleExponential(random, 1.0); // Exponential sample for event duration
-                    DateTime endTime = startTime.AddHours(durationInHours);
+                k++;
+                var u = random.NextDouble();
+                p *= u;
+            } while (p > l);
 
-                    // Ensure endTime is within the window
-                    if (endTime > windowEndTime)
-                    {
-                        endTime = windowEndTime;
-                    }
-
-                    writer.WriteLine($"Start Time: {startTime}, End Time: {endTime}");
-                }
-            }
+            return k - 1;
         }
-
-        static DateTime GenerateRandomDateTime(DateTime start, DateTime end, Random random)
-        {
-            TimeSpan range = end - start;
-            TimeSpan randomSpan = new TimeSpan((long)(random.NextDouble() * range.Ticks));
-            return start + randomSpan;
-        }
-
-        static double SampleExponential(Random random, double mean)
-        {
-            // Using the inverse transform sampling method for the exponential distribution
-            return -mean * Math.Log(1 - random.NextDouble());
-        }
-
     }
 
-    class Event
+    internal class Event
     {
         public DateTime StartTime { get; set; }
         //public DateTimeOffset DateOffset { get; set; }
