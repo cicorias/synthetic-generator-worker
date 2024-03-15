@@ -1,3 +1,5 @@
+using SyntheticGenerator.Generators;
+
 namespace SyntheticGenerator
 {
     public class Program
@@ -6,7 +8,7 @@ namespace SyntheticGenerator
         {
             var builder = Host.CreateApplicationBuilder(args);
             builder.Configuration.AddCommandLine(args);
-            builder.Services.AddHostedService<Worker>();
+            builder.Services.AddHostedService<ReplayOrders>();
 
             var host = builder.Build();
             host.Run();

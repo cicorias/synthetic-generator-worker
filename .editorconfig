@@ -1,11 +1,5 @@
 root = true
 [*.cs]
-
-# Remove the line below if you want to inherit .editorconfig settings from higher directories
-
-# C# files
-[*.cs]
-
 ### IDE0290: Use primary constructor
 dotnet_diagnostic.IDE0290.severity = none
 
