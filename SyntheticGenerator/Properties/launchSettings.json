@@ -6,6 +6,15 @@
         "DOTNET_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true
+      //"commandLineArgs": "--ReplayOrdersOptions:NumberOfEvents=10"
+    },
+    "SyntheticGeneratorOverride": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true,
+      "commandLineArgs": "--ReplayOrdersOptions:NumberOfEvents=10"
     },
     "Container (Dockerfile)": {
       "commandName": "Docker"

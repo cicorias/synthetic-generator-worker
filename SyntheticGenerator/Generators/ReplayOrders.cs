@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using SyntheticGenerator.Helpers;
 
 namespace SyntheticGenerator.Generators
 {
@@ -15,11 +9,13 @@ namespace SyntheticGenerator.Generators
         private readonly ILogger<ReplayOrders> _logger;
         private readonly IHostApplicationLifetime _hostApplicationLifetime;
         private readonly Random random = new();
+        private readonly ReplayOrdersOptions _options;
 
-        public ReplayOrders(ILogger<ReplayOrders> logger, IHostApplicationLifetime hostApplicationLifetime)
+        public ReplayOrders(ILogger<ReplayOrders> logger, IOptions<ReplayOrdersOptions> options, IHostApplicationLifetime hostApplicationLifetime)
         {
             _logger = logger;
             _hostApplicationLifetime = hostApplicationLifetime;
+            _options = options.Value;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -34,15 +30,17 @@ namespace SyntheticGenerator.Generators
         }
         private async Task DoPrimaryWork()
         {
-            _logger.LogInformation("...");
-            var windowStartTimeStr = "2024-03-15T12:00:00";
-            var windowEndTimeStr = "2024-03-15T12:15:00";
-            var outputFile = "events.jsonl";
-            var lambda = double.Parse("120");
-            var numberOfEvents = int.Parse("500");
+            _logger.LogInformation("retreiving configuration...");
+            _options.ValidateObject();
 
-            var windowStartTime = DateTime.Parse(windowStartTimeStr);
-            var windowEndTime = DateTime.Parse(windowEndTimeStr);
+            var windowStartTimeStr = _options.WindowStartTimeStr ?? DateTime.Parse("2024-03-15T12:15:00");
+            var windowEndTimeStr = _options.WindowEndTimeStr ?? DateTime.Parse("2024-03-15T12:15:00");
+            var outputFile = _options.OutputFile ?? "events.jsonl";
+            var lambda = _options.Lambda ?? 120;
+            var numberOfEvents = _options.NumberOfEvents ?? 10;
+
+            var windowStartTime = windowStartTimeStr;
+            var windowEndTime = windowEndTimeStr;
             var windowDuration = windowEndTime - windowStartTime;
 
             using (var writer = new StreamWriter(outputFile))
@@ -57,11 +55,6 @@ namespace SyntheticGenerator.Generators
                     // Distribute events evenly across the time window
                     var fraction = (double)i / numberOfEvents;
                     var offset = TimeSpan.FromTicks((long)(fraction * windowDuration.Ticks)).RoundedToSeconds();
-
-                    //double totalSeconds = offset.TotalSeconds;
-                    //int roundedSeconds = (int)Math.Round(totalSeconds);
-                    //TimeSpan roundedTimeSpan = TimeSpan.FromSeconds(roundedSeconds);
-
                     var eventStartTime = windowStartTime.Add(offset);
                     var eventEndTime = eventStartTime.Add(eventDuration);
 
@@ -76,10 +69,7 @@ namespace SyntheticGenerator.Generators
                     await writer.WriteLineAsync(json);
                 }
             }
-
-            Console.WriteLine("File created successfully.");
-
-            await Task.Delay(1000);
+            
             _logger.LogInformation("Primary work is done");
         }
 
@@ -108,13 +98,4 @@ namespace SyntheticGenerator.Generators
         public double TotalTime { get; set; }
     }
 
-    internal static class Extensions
-    {
-
-        public static TimeSpan RoundedToSeconds(this TimeSpan ts)
-        {
-            return TimeSpan.FromSeconds((int)Math.Round(ts.TotalSeconds));
-        }
-        
-    }
 }
