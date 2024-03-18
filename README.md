@@ -4,8 +4,17 @@ This is a simple IoT data generator that creates synthetic data for a set of IoT
 
 
 ## TODO:
-- [ ] externalize configuartion and command line parameters
+- [x] externalize configuartion and command line parameters
 - [ ] add emit file every N minutes option
 - [ ] have file emitted with YYYY... format
 - [ ] 
+
+
+
+## Running
+
+```sh
+# windows pwsh
+docker run -it --rm -v c:\temp:/out syntheticgenerator --ReplayOrdersOptions:OutputFile="/out/foobar.jsonl" --ReplayOrdersOptions:WindowStartTimeStr="2024-03-15T00:00:00" --ReplayOrdersOptions:WindowEndTimeStr="2024-03-16T00:00:00" --ReplayOrdersOptions:NumberOfEvents=2000 --ReplayOrdersOptions:Lambda=600
+```
 
