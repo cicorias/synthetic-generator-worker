@@ -1,0 +1,13 @@
+
+version: '3.4'
+
+services:
+  syntheticgenerator:
+    image: syntheticgenerator
+    build:
+      context: .
+      dockerfile: SyntheticGenerator/Dockerfile
+      args:
+        - configuration=Debug
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
