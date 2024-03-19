@@ -10,11 +10,11 @@ on:
   # schedule:
   #   - cron: '26 10 * * *' 
   push:
-    branches: [ "cicorias-patch-1" ]
+    branches: [ "main" ]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
   pull_request:
-    branches: [ "cicorias-patch-1" ]
+    branches: [ "main" ]
 
 env:
   # Use docker.io for Docker Hub if empty
