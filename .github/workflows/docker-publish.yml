@@ -6,14 +6,15 @@ name: Docker
 # documentation.
 
 on:
+  workflow_dispatch:
   schedule:
-    - cron: '26 10 * * *'
+    - cron: '26 10 * * *' 
   push:
-    branches: [ "main" ]
+    branches: [ "cicorias-patch-1" ]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "cicorias-patch-1" ]
 
 env:
   # Use docker.io for Docker Hub if empty
