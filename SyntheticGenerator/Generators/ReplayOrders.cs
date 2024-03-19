@@ -45,8 +45,6 @@ namespace SyntheticGenerator.Generators
 
             using (var writer = new StreamWriter(outputFile))
             {
-                writer.WriteLine("StartTime,EndTime,TotalTime");
-
                 for (var i = 0; i < numberOfEvents; i++)
                 {
                     var eventDurationInSeconds = GeneratePoisson(lambda);
