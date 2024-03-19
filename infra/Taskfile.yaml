@@ -1,0 +1,13 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:
+  delete:
+    desc: Delete Extraction Service from kubernetes (NOTE - this is a work in progress)
+    cmd: kubectl delete deployment -n ingestion synthetic-generator-deployment
+
+
+  deploy:
+    desc: Deploy Extraction Service to kubernetes (NOTE - this is a work in progress)
+    cmd: kubectl apply -k .

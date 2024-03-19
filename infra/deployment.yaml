@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: synthetic-generator-deployment
+  labels:
+    app: synthetic-generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: synthetic-generator
+  template:
+    metadata:
+      labels:
+        app: synthetic-generator
+    spec:
+      initContainers:
+      - name: synthgenerator
+        image: ghcr.io/cicorias/synthetic-generator-worker:main
+        envFrom:
+        - configMapRef:
+            name: synthetic-generator-config
+        volumeMounts:
+        - name: shared-volume
+          mountPath: /shared
+      containers:
+      - name: azurecli
+        image: mcr.microsoft.com/azure-cli:latest
+        command: ["tail", "-f", "/dev/null"]
+        resources:
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+        volumeMounts:
+        - name: shared-volume
+          mountPath: /shared
+      volumes:
+      - name: shared-volume
+        emptyDir: {}

@@ -1,0 +1,9 @@
+namespace: ingestion
+resources:
+  - ns.yaml
+  - deployment.yaml
+
+configMapGenerator:
+- name: synthetic-generator-config
+  envs:
+  - .env
