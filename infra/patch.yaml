@@ -1,0 +1,18 @@
+# patch.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-deployment
+spec:
+  template:
+    spec:
+      containers:
+        - name: my-container
+          volumeMounts:
+            - name: script-volume
+              mountPath: /path/to/script
+      volumes:
+        - name: script-volume
+          configMap:
+            name: my-script-configmap
+

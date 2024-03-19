@@ -3,7 +3,13 @@ resources:
   - ns.yaml
   - deployment.yaml
 
+patchesStrategicMerge:
+  - patch.yaml
+
 configMapGenerator:
 - name: synthetic-generator-config
   envs:
   - .env
+- name: my-script-configmap
+  files:
+    - script.sh
