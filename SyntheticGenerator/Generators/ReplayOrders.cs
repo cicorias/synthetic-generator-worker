@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
 using SyntheticGenerator.Helpers;
 
@@ -58,6 +59,7 @@ namespace SyntheticGenerator.Generators
 
                     var evt = new Event
                     {
+                        TransactionId = Guid.NewGuid().ToString(),
                         StartTime = eventStartTime,
                         EndTime = eventEndTime,
                         TotalTime = eventDurationInSeconds
@@ -91,6 +93,9 @@ namespace SyntheticGenerator.Generators
 
     internal class Event
     {
+        public int Valid {get; set;}
+        [JsonPropertyName("Transaction ID")]
+        public string? TransactionId { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public double TotalTime { get; set; }
