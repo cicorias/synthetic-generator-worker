@@ -9,56 +9,56 @@ name: Release
 #             description: 'release tag'
 #             required: true
 on:
-  push:
-    tags:
-      - "v*.*.*"
-
+  workflow_dispatch:
+  # push:
+  #   tags:
+  #     - "v*.*.*"
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    # env:
+    #   tag_name: ${{ github.ref == 'refs/tags/' && github.ref.replace('refs/tags/', '') }}
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
-      
-    - name: Publish for Windows
-      run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --self-contained --configuration Release --runtime win-x64 --output ./publish/win-x64
-    # - name: Publish for Linux
-    #   run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --self-contained --configuration Release --runtime linux-x64 --output ./publish/linux-x64
-    # - name: Publish for Darwin (macOS)
-    #   run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --self-contained --configuration Release --runtime osx-x64 --output ./publish/osx-x64
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
 
-    - name: zip releases
-      run: |
-        cd publish/win-x64
-        zip -r ../win-x64.zip .
-        cd ../..
-        # cd publish/linux-x64
-        # zip -r linux-x64.zip .
-        # cd ../..
-        # cd publish/osx-x64
-        # zip -r osx-x64.zip .
-        # cd ../..
-    - name: Release
-      uses: softprops/action-gh-release@v2
-      with:
-        files: |
-          ./publish/win-x64.zip
-        tag_name: ${{ github.ref }}
-        body: ${{ github.ref }}
+      - name: Publish for Windows
+        run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --self-contained --configuration Release --runtime win-x64 --output ./publish/win-x64
+      - name: Publish for Linux
+        run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --self-contained --configuration Release --runtime linux-x64 --output ./publish/linux-x64
+      - name: Publish for Darwin (macOS)
+        run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --self-contained --configuration Release --runtime osx-x64 --output ./publish/osx-x64
 
-          # ./publish/linux-x64/**
-          # ./publish/osx-x64/**
+      - name: zip releases
+        run: |
+          cd publish/win-x64
+          zip -r ../win-x64.zip .
+          cd ../..
+          # cd publish/linux-x64
+          # zip -r linux-x64.zip .
+          # cd ../..
+          # cd publish/osx-x64
+          # zip -r osx-x64.zip .
+          # cd ../..
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ./publish/win-x64.zip
+            ./publish/linux-x64.zip
+            ./publish/osx-x64.zip
+          tag_name: ${{ github.ref }}
+          body: ${{ github.ref }}
 
     # # Upload Release Assets
     # - name: Upload Windows Asset

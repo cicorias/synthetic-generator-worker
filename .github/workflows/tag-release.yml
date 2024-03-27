@@ -1,0 +1,34 @@
+name: Release
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+    publish:
+      runs-on: ubuntu-latest
+      strategy:
+        matrix:
+          include:
+            - os: windows
+              runtime: win-x64
+            - os: linux
+              runtime: linux-x64
+            - os: darwin
+              runtime: osx-x64
+            - os: darwin
+              runtime: osx-arm64
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+  
+        - name: Setup .NET
+          uses: actions/setup-dotnet@v1
+          with:
+            dotnet-version: 8.0.x
+        - name: Publish for ${{ matrix.os }}
+          run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --self-contained --configuration Release --runtime ${{ matrix.runtime }} --output ./publish/${{ matrix.runtime }}
+        - name: zip releases
+          run: |
+            cd publish/${{ matrix.runtime }}
+            zip -r ../${{ matrix.runtime }}.zip .
