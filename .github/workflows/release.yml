@@ -1,18 +1,8 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
 name: Release
-# on:
-#   workflow_dispatch:
-#     inputs:
-#         release:
-#             description: 'release tag'
-#             required: true
 on:
-  workflow_dispatch:
-  # push:
-  #   tags:
-  #     - "v*.*.*"
+  push:
+    tags:
+      - "v*.*.*"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,6 +21,25 @@ jobs:
         run: dotnet build --no-restore
       - name: Test
         run: dotnet test --no-build --verbosity normal
+      - name: Publish
+        run: |
+          # Define an array of operating systems and their corresponding runtimes
+          os_list=( "win-x64" )
+          # "linux-x64" "osx-x64" )
+
+          # Loop through each operating system in the list
+          for os in "${os_list[@]}"
+          do
+            # Construct the output directory name based on the OS
+            output_dir="./publish/$os"
+
+            # Run the dotnet publish command for the current OS
+            dotnet publish SyntheticGenerator/SyntheticGenerator.csproj \
+              --self-contained --configuration Release --runtime "$os" --output "$output_dir"
+
+            # Print a message indicating completion for the current OS (optional)
+            echo "Published for $os to: $output_dir"
+          done
 
       - name: Publish for Windows
         run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --self-contained --configuration Release --runtime win-x64 --output ./publish/win-x64
@@ -57,36 +66,5 @@ jobs:
             ./publish/win-x64.zip
             ./publish/linux-x64.zip
             ./publish/osx-x64.zip
-          tag_name: ${{ github.ref }}
-          body: ${{ github.ref }}
-
-    # # Upload Release Assets
-    # - name: Upload Windows Asset
-    #   uses: actions/upload-release-asset@v1
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   with:
-    #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-    #     asset_path: ./publish/win-x64
-    #     asset_name: project-windows-x64.zip
-    #     asset_content_type: application/zip
-
-    # - name: Upload Linux Asset
-    #   uses: actions/upload-release-asset@v1
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   with:
-    #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-    #     asset_path: ./publish/linux-x64
-    #     asset_name: project-linux-x64.zip
-    #     asset_content_type: application/zip
-
-    # - name: Upload Darwin Asset
-    #   uses: actions/upload-release-asset@v1
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   with:
-    #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-    #     asset_path: ./publish/osx-x64
-    #     asset_name: project-darwin-x64.zip
-    #     asset_content_type: application/zip
+          tag_name: ${{ github.ref_name }}
+          body: ${{ github.ref_name }}
