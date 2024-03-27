@@ -1,4 +1,4 @@
-name: Release
+name: ReleaseOnTag
 on:
   push:
     tags:
@@ -32,3 +32,10 @@ jobs:
           run: |
             cd publish/${{ matrix.runtime }}
             zip -r ../${{ matrix.runtime }}.zip .
+        - name: Release
+          uses: softprops/action-gh-release@v2
+          with:
+            files: |
+              ./publish/${{ matrix.runtime }}.zip
+            tag_name: ${{ github.ref_name }}
+            body: ${{ github.ref_name }}
