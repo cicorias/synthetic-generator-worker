@@ -32,11 +32,11 @@ jobs:
       run: dotnet test --no-build --verbosity normal
       
     - name: Publish for Windows
-      run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --no-restore --self-contained --configuration Release --runtime win-x64 --output ./publish/win-x64
+      run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --self-contained --configuration Release --runtime win-x64 --output ./publish/win-x64
     - name: Publish for Linux
-      run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --no-restore --self-contained --configuration Release --runtime linux-x64 --output ./publish/linux-x64
+      run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --self-contained --configuration Release --runtime linux-x64 --output ./publish/linux-x64
     - name: Publish for Darwin (macOS)
-      run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --no-restore --self-contained --configuration Release --runtime osx-x64 --output ./publish/osx-x64
+      run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --self-contained --configuration Release --runtime osx-x64 --output ./publish/osx-x64
 
     - name: Release
       uses: softprops/action-gh-release@v2
