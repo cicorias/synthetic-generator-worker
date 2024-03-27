@@ -6,9 +6,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # env:
-    #   tag_name: ${{ github.ref == 'refs/tags/' && github.ref.replace('refs/tags/', '') }}
-
+    env:
+      OS_LIST: "win-x64 linux-x64 osx-x64 osx-arm64"
     steps:
       - uses: actions/checkout@v4
       - name: Setup .NET
@@ -24,8 +23,7 @@ jobs:
       - name: Publish
         run: |
           # Define an array of operating systems and their corresponding runtimes
-          os_list=( "win-x64" )
-          # "linux-x64" "osx-x64" )
+          os_list=( $OS_LIST )
 
           # Loop through each operating system in the list
           for os in "${os_list[@]}"
@@ -41,24 +39,14 @@ jobs:
             echo "Published for $os to: $output_dir"
           done
 
-      - name: Publish for Windows
-        run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --self-contained --configuration Release --runtime win-x64 --output ./publish/win-x64
-      - name: Publish for Linux
-        run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --self-contained --configuration Release --runtime linux-x64 --output ./publish/linux-x64
-      - name: Publish for Darwin (macOS)
-        run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --self-contained --configuration Release --runtime osx-x64 --output ./publish/osx-x64
-
       - name: zip releases
         run: |
-          cd publish/win-x64
-          zip -r ../win-x64.zip .
-          cd ../..
-          # cd publish/linux-x64
-          # zip -r linux-x64.zip .
-          # cd ../..
-          # cd publish/osx-x64
-          # zip -r osx-x64.zip .
-          # cd ../..
+          for os in $OS_LIST; do
+            cd publish/$os
+            zip -r ../$os.zip .
+            cd ../..
+          done
+      
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
@@ -66,5 +54,6 @@ jobs:
             ./publish/win-x64.zip
             ./publish/linux-x64.zip
             ./publish/osx-x64.zip
+            ./publish/osx-arm64.zip
           tag_name: ${{ github.ref_name }}
           body: ${{ github.ref_name }}
