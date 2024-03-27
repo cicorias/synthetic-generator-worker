@@ -33,21 +33,32 @@ jobs:
       
     - name: Publish for Windows
       run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --self-contained --configuration Release --runtime win-x64 --output ./publish/win-x64
-    - name: Publish for Linux
-      run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --self-contained --configuration Release --runtime linux-x64 --output ./publish/linux-x64
-    - name: Publish for Darwin (macOS)
-      run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --self-contained --configuration Release --runtime osx-x64 --output ./publish/osx-x64
+    # - name: Publish for Linux
+    #   run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --self-contained --configuration Release --runtime linux-x64 --output ./publish/linux-x64
+    # - name: Publish for Darwin (macOS)
+    #   run: dotnet publish SyntheticGenerator/SyntheticGenerator.csproj --self-contained --configuration Release --runtime osx-x64 --output ./publish/osx-x64
 
+    - name: zip releases
+      run: |
+        cd publish/win-x64
+        zip -r ../win-x64.zip .
+        cd ../..
+        # cd publish/linux-x64
+        # zip -r linux-x64.zip .
+        # cd ../..
+        # cd publish/osx-x64
+        # zip -r osx-x64.zip .
+        # cd ../..
     - name: Release
       uses: softprops/action-gh-release@v2
       with:
         files: |
-          ./publish/win-x64/**
-          ./publish/linux-x64/**
-          ./publish/osx-x64/**
+          ./publish/win-x64.zip
         tag_name: ${{ github.ref }}
         body: ${{ github.ref }}
 
+          # ./publish/linux-x64/**
+          # ./publish/osx-x64/**
 
     # # Upload Release Assets
     # - name: Upload Windows Asset
