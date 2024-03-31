@@ -33,7 +33,7 @@ jobs:
 
             # Run the dotnet publish command for the current OS
             dotnet publish SyntheticGenerator/SyntheticGenerator.csproj \
-              --self-contained --configuration Release --runtime "$os" --output "$output_dir"
+              --self-contained true --configuration Release --runtime "$os" --output "$output_dir"
 
             # Print a message indicating completion for the current OS (optional)
             echo "Published for $os to: $output_dir"
