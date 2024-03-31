@@ -7,7 +7,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      OS_LIST: "win-x64 linux-x64 osx-x64 osx-arm64"
+      OS_LIST: "win-x64 linux-x64 osx-x64"
+      # osx-arm64 not running -- possible gatekeeper or codesign issue
     steps:
       - uses: actions/checkout@v4
       - name: Setup .NET
