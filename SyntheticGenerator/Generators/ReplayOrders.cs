@@ -28,6 +28,7 @@ namespace SyntheticGenerator.Generators
             _logger.LogInformation("Stopping the application");
             _hostApplicationLifetime.StopApplication();
         }
+
         private async Task DoPrimaryWork()
         {
             _logger.LogInformation("retreiving configuration...");
@@ -35,7 +36,6 @@ namespace SyntheticGenerator.Generators
 
             var windowStartTimeStr = _options.WindowStartTimeStr ?? DateTime.Parse("2024-03-15T12:15:00");
             var windowEndTimeStr = _options.WindowEndTimeStr ?? DateTime.Parse("2024-03-15T12:15:00");
-            var outputFile = _options.OutputFile ?? "events.jsonl";
             var lambda = _options.Lambda ?? 120;
             var numberOfEvents = _options.NumberOfEvents ?? 10;
 
@@ -43,7 +43,7 @@ namespace SyntheticGenerator.Generators
             var windowEndTime = windowEndTimeStr;
             var windowDuration = windowEndTime - windowStartTime;
 
-            using (var writer = new StreamWriter(outputFile))
+            using (var writer = GetOutputStream())
             {
                 for (var i = 0; i < numberOfEvents; i++)
                 {
@@ -67,7 +67,7 @@ namespace SyntheticGenerator.Generators
                     await writer.WriteLineAsync(json);
                 }
             }
-            
+
             _logger.LogInformation("Primary work is done");
         }
 
@@ -87,7 +87,26 @@ namespace SyntheticGenerator.Generators
 
             return k - 1;
         }
+        private StreamWriter GetOutputStream()
+        {
+            var outFile = _options.OutputFile;
+            // Check if the outFile parameter has a value
+            if (!string.IsNullOrEmpty(outFile))
+            {
+                // Return a StreamWriter for the specified file
+                return new StreamWriter(outFile);
+            }
+            else
+            {
+                // Return a StreamWriter for the standard output stream
+                return new StreamWriter(Console.OpenStandardOutput())
+                {
+                    AutoFlush = true
+                };
+            }
+        }
     }
+
 
     internal class Event
     {
@@ -95,5 +114,7 @@ namespace SyntheticGenerator.Generators
         public DateTime EndTime { get; set; }
         public double TotalTime { get; set; }
     }
+
+
 
 }
